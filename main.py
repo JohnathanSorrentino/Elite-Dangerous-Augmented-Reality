@@ -5,11 +5,18 @@
 
 import json     # Needed to read the Status.json file
 
-# Read a file
-f = open("C:\\Users\\johna\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json")
-statusContent = f.read()
-aList = json.loads(statusContent)
+def checkFlag(flag,flagToCheck):
+    return flag & flagToCheck == flagToCheck
 
-print(aList)
+# Read a file
+f = open("C:\\Users\\Andersen B\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json")
+statusContent = f.read()
 # Closing file
 f.close()
+
+info = json.loads(statusContent)
+landingGearFlag = 4
+
+print(info['Flags'])
+print(hex(info['Flags']))
+print(checkFlag(info['Flags'],landingGearFlag))
