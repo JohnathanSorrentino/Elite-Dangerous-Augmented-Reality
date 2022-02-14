@@ -10,6 +10,7 @@ import time		# Needed for internal delays
 def checkFlag(flag,flagToCheck):
     return flag & flagToCheck == flagToCheck
 
+# shields up, fsd charging, is in danger/ being interdicted, over heating, masslocked, hardpoints deployed
 def viewActiveFlags(flag): #lits all flags that are currently active
     flags = ["docked","landed","landing Gear Down","shields up", "super cruise", "flight assist off", "hardpoints deployed", "in wing","lights on",
              "cargo scoop deployed","silent running","scooping fuel","srv handbrake","srv using turret view","Srv turret retracted","srv drive assist",
