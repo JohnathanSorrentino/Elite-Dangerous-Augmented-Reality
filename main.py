@@ -4,6 +4,8 @@
 # This code retrieves status updates from Elite Dangerous and sends them to a device using a serial port.
 import sched, time
 import json     # Needed to read the Status.json file
+import serial	# Needed for serial communication with Arduino
+import time		# Needed for internal delays
 
 def checkFlag(flag,flagToCheck):
     return flag & flagToCheck == flagToCheck
@@ -41,7 +43,7 @@ def readStatus():
 
 
 # code to run every 3 seconds using an event 
-s = sched.scheduler(time.time, time.sleep)
+s = sched.scheduler(time.time, time.sleep) # What kind of object is this?
 def do_something(sc): 
     print("*****************\nchecking json...")
     if(readStatus() == False): #if reading status file return false, exit loop
@@ -50,5 +52,25 @@ def do_something(sc):
     else: 
         s.enter(3, 1, do_something, (sc,))#calls its self after waiting 3 seconds
 
-s.enter(1, 1, do_something, (s,))
-s.run()
+#s.enter(1, 1, do_something, (s,)) # How does this work?
+#s.run()
+
+###	Serial Code
+arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = .1)
+time.sleep(1)
+
+def write_read(x):
+	arduino.write(bytes(x, 'utf-8'))
+	time.sleep(0.1)
+	data = arduino.readline().decode('utf-8').rstrip()
+	return data
+	
+while True:
+	num = input("Enter a number: ")
+	value = write_read(num)
+	print(value)
+	
+
+
+
+ 
