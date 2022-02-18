@@ -80,10 +80,10 @@ def write_read(x):
 	data = arduino.readline().decode('utf-8').rstrip()
 	return data
 	
-while True:
-	num = input("Enter a number: ")
-	value = write_read(num)
-	print(value)
+#while True:
+#	num = input("Enter a number: ")
+#	value = write_read(num)
+#	print(value)
 	
 
 
