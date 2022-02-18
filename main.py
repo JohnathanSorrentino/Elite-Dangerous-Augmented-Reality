@@ -37,14 +37,28 @@ def readStatus():
     print("\tflags active:" + bin(info['Flags'])) #if a 1 is present, there is a flag there. ex. 1010 shows flags at 8, 2
     viewActiveFlags(info['Flags'])
     
+    if checkFlag(info['flags'],8): #shields up
+    	write_ard(1)
+    elif checkFlag(info['flags'],64):#hardpoints
+	write_ard(2)
+    elif checkFlag(info['flags'],131072): #fsd charging 
+	write_ard(3)
+    elif checkFlag(info['flags'],4194304): #  is in danger
+	write_ard(4)
+    else:
+	write_ard(5)
+    
     #landingGearFlag = 4
     #print("\t check flag 4,landingGear:", checkFlag(info['Flags'],landingGearFlag))
     
     return True
 
+## connect to port
+arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = .1)
+time.sleep(1)
 
 # code to run every 3 seconds using an event 
-s = sched.scheduler(time.time, time.sleep) # What kind of object is this?
+s = sched.scheduler(time.time, time.sleep) # create schedular
 def do_something(sc): 
     print("*****************\nchecking json...")
     if(readStatus() == False): #if reading status file return false, exit loop
@@ -53,13 +67,13 @@ def do_something(sc):
     else: 
         s.enter(3, 1, do_something, (sc,))#calls its self after waiting 3 seconds
 
-#s.enter(1, 1, do_something, (s,)) # How does this work?
-#s.run()
+s.enter(1, 1, do_something, (s,)) # 
+s.run()
 
-###	Serial Code
-arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = .1)
-time.sleep(1)
 
+def write_ard(x):
+	arduino.write(bytes(x, 'utf-8'))
+	
 def write_read(x):
 	arduino.write(bytes(x, 'utf-8'))
 	time.sleep(0.1)
