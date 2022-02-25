@@ -25,7 +25,8 @@ char *colourList[] = {
 void setup() {
   // put your setup code here, to run once:
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.setTimeout(1);
 }
 
 void loop() {
@@ -33,6 +34,12 @@ void loop() {
   //flashRed();
   //chargingBlue();
   //randomLightUp();
+
+  int x;
+
+  if (Serial.available()) {
+    x = Serial.readString().toInt();
+  }
 
   leds[0] = CRGB::Red;
   leds[59] = CRGB::Green;
