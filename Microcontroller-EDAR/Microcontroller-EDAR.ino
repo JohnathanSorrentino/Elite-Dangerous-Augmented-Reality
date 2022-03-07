@@ -4,6 +4,7 @@
 #define NUM_LEDS    60
 
 CRGB leds[NUM_LEDS];
+int adcPin = A0;
 char *colourList[] = {
   "000000",
   "000000",
@@ -34,16 +35,21 @@ void loop() {
   //flashRed();
   //chargingBlue();
   //randomLightUp();
-
   int x;
+  int potValue;
+  int brightness;
 
+  potValue = analogRead(adcPin);
+  brightness = map(potValue, 0, 1023, 0, 255);
+  FastLED.setBrightness(brightness);
+  
   if (Serial.available()) {
     x = Serial.readString().toInt();
   }
-
-  leds[0] = CRGB::Red;
-  leds[59] = CRGB::Green;
-  FastLED.show();
+  if (x == 1) {
+    flashRed();
+  }
+  
 }
 
 void randomLightUp( void) {
