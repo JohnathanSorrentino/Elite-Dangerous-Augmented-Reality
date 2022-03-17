@@ -44,9 +44,9 @@ def readStatus():
     viewActiveFlags(info['Flags'])
     
     
-arduino = serial.Serial(port = 'COM5', baudrate = 115200, timeout = .1)
+arduino = serial.Serial(port = 'COM6', baudrate = 115200, timeout = .1)
 def write_ard(x):
-	arduino.write(x)
+	arduino.write(bytes(x, 'utf-8'))
 	
 def read_ard():
 	data = arduino.readline().decode('utf-8').rstrip()
@@ -57,17 +57,17 @@ def loop(num):
     print("*****************\nchecking json...");
     print(time.time());
     
-    readStatus();
-    print("The number is")
+    #readStatus();
+    print("The number is: ")
     print(num);
     write_ard(num);
-    time.sleep(0.1);
+    time.sleep(2);
     number = read_ard();
     
-    print("number from the arduino:")
+    print("Number from the Arduino: ")
     print(number)
     
-    num1 = int(input())
+    num1 = input("Enter a number: ")
     s.enter(1, 1, loop, argument = (num1,));             #calls its self after waiting 1 seconds
 
 def main():
@@ -75,7 +75,7 @@ def main():
     
     time.sleep(1)
    
-    num1 = int(input())
+    num1 = input("Enter a number: ")
     s.enter(1, 1, loop, argument = (num1,));           
     s.run(); 
 

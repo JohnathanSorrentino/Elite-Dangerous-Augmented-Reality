@@ -46,9 +46,17 @@ void loop() {
   FastLED.setBrightness(brightness);
   
   if (Serial.available()) {
-    comm = Serial.read();
-    Serial.write(comm);
+    x = Serial.readString().toInt();
+    Serial.println(x+1);
   }
+  
+  switch(x)
+    {
+      case 1: flashRed(); break;
+      case 2: chargingBlue(); break;
+      case 3: randomLightUp(); break;
+      default: chargingBlue(); break;
+    }
 }
 
 void randomLightUp( void) {
