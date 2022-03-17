@@ -1,14 +1,33 @@
+<<<<<<< HEAD
 # Last Updated: 2022-03-07
+=======
+# Last Updated: 2022-03-2
+>>>>>>> 43e34a731a7e0d42bc6b9237a840dd7724075418
 # Coded by: Andersen Ball, Johnathan Sorrentino
 
 # This code retrieves status updates from Elite Dangerous and sends them to a device using a serial port.
 import sched, time
 import json     # Needed to read the Status.json file
-import serial	# Needed for serial communication with Arduino
-import time		# Needed for internal delays
+#import serial	# Needed for serial communication with Arduino
+#import time		# Needed for internal delays
+
+def write_ard(x,time_to_wait):
+    print("send to ardino:",x)
+    if time_to_wait != 0:
+        time.sleep(time_to_wait)
+	#arduino.write(bytes(x, 'utf-8'))
+
 
 def checkFlag(flag,flagToCheck):
     return flag & flagToCheck == flagToCheck
+
+
+def checkFlagChange(flag,prevflag,flagToCheck): #if flag was previous false and is now true return true.
+    if checkFlag(flag,flagToCheck) and False ==checkFlag(prevflag,flagToCheck):
+        return True
+    else:
+        return False
+    
 
 # shields up, fsd charging, is in danger/ being interdicted, over heating, masslocked, hardpoints deployed
 def viewActiveFlags(flag): #lits all flags that are currently active
@@ -22,6 +41,7 @@ def viewActiveFlags(flag): #lits all flags that are currently active
             print("\t",flags[i],":","flag",i)
 
 
+
 def readStatus():
     # Open the file, store the information to a variable, then close the file
     f = open("C:\\Users\\johna\\Saved Games\\Frontier Developments\\Elite Dangerous\\Status.json")
@@ -30,6 +50,7 @@ def readStatus():
     
     # Save the filetype using its json format
     print("\tloaded json:",statusContent)
+<<<<<<< HEAD
     info = json.loads(statusContent)    
     print("\tflags active:" + bin(info['Flags'])) #if a 1 is present, there is a flag there. ex. 1010 shows flags at 8, 2
     viewActiveFlags(info['Flags'])
@@ -41,6 +62,62 @@ def write_ard(x):
 def read_ard():
 	data = arduino.readline().decode('utf-8').rstrip()
 	return data
+=======
+    info = json.loads(statusContent)
+
+    if(len(info) == 3): #check if length of dic is 3. It is like this when game is turned off. use this to cancel function
+        return False
+    
+    
+    print("\tflags active:" + bin(info['Flags'])) #if a 1 is present, there is a flag there. ex. 1010 shows flags at 8, 2
+    viewActiveFlags(info['Flags'])
+    
+    if checkFlagChange(info['Flags'],StaticInfo.prev_info,8): #shields up
+    	write_ard(1,3)
+    elif checkFlagChange(info['Flags'],StaticInfo.prev_info,64):#hardpoints
+        write_ard(2,2)
+    elif checkFlagChange(info['Flags'],StaticInfo.prev_info,131072): #fsd charging 
+        write_ard(3,6)
+    elif checkFlagChange(info['Flags'],StaticInfo.prev_info,4194304): #  is in danger
+        write_ard(4,5)
+    else:
+        write_ard(5,0)
+    StaticInfo.prev_info = info['Flags']
+    
+    return True
+
+
+
+class StaticInfo:
+        prev_info = 0
+        timesRun = 0
+
+
+def main():
+    def do_something(sc): 
+        print("*****************\nchecking json...",StaticInfo.timesRun)
+        StaticInfo.timesRun += 1
+        if(readStatus()==False): #if reading status file return false, exit loop
+            print("ending function")
+            return
+        else: 
+            s.enter(.5, 1, do_something, (sc,))#calls its self after waiting 3 seconds
+    
+    ## connect to port
+    #arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = .1)
+    time.sleep(1)
+    
+    # code to run every 3 seconds using an event 
+    s = sched.scheduler(time.time, time.sleep) # create schedular
+    s.enter(1, 1, do_something, (s,)) # 
+    s.run()
+
+
+if __name__=="__main__":
+    main()
+
+
+>>>>>>> 43e34a731a7e0d42bc6b9237a840dd7724075418
 
 s = sched.scheduler(time.time, time.sleep)  # create scheduler
 def loop(num):
@@ -52,7 +129,10 @@ def loop(num):
     print(num);
     write_ard(num);
     time.sleep(0.1);
-    read_ard();
+    number = read_ard();
+    
+    print("number from the arduino:")
+    print(number)
     
     num1 = int(input())
     s.enter(1, 1, loop, argument = (num1,));             #calls its self after waiting 1 seconds
