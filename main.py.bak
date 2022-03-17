@@ -52,10 +52,7 @@ def loop(num):
     print(num);
     write_ard(num);
     time.sleep(0.1);
-    number = read_ard();
-    
-    print("number from the arduino:")
-    print(number)
+    read_ard();
     
     num1 = int(input())
     s.enter(1, 1, loop, argument = (num1,));             #calls its self after waiting 1 seconds

@@ -1,7 +1,9 @@
 #include <FastLED.h>
 
-#define LED_PIN     4
+#define LED_PIN     3
 #define NUM_LEDS    60
+
+int comm = 1;
 
 CRGB leds[NUM_LEDS];
 char *colourList[] = {
@@ -35,15 +37,24 @@ void loop() {
   //chargingBlue();
   //randomLightUp();
 
-  int x;
-
+  int adcPin = A2;
+ 
+  int potVal = analogRead(adcPin);
+  int brightness = map(potVal, 0, 1023, 0, 255);
+  FastLED.setBrightness(brightness);
+  
   if (Serial.available()) {
-    x = Serial.readString().toInt();
+    comm = Serial.read();
+    Serial.write(comm);
   }
 
-  leds[0] = CRGB::Red;
-  leds[59] = CRGB::Green;
-  FastLED.show();
+  if (comm == 1) {
+    chargingBlue();
+  } else if (comm == 2) {
+    flashRed();
+  } else {
+    randomLightUp();
+  }
 }
 
 void randomLightUp( void) {
