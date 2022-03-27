@@ -6,6 +6,7 @@ import sched, time
 import json     # Needed to read the Status.json file
 import serial	# Needed for serial communication with Arduino
 import os       # Needed for file size checking
+import struct
 
 def readStatus():
     # Open the file, store the information to a variable, then close the file
@@ -21,14 +22,16 @@ def readStatus():
         return
     else:
         info = json.loads(statusContent)    
-        write_ard(str(info['Flags']&4))
+        write_ard_uint(info['Flags'])
+        print(info['Flags'])
     
 	
     
     
 arduino = serial.Serial(port = 'COM6', baudrate = 115200, timeout = .1)
-def write_ard(x):
-	arduino.write(bytes(x, 'utf-8'))
+def write_ard_uint(x):
+	arduino.write(struct.pack('I', x))
+	
 	
 def read_ard():
 	data = arduino.readline().decode('utf-8').rstrip()
@@ -41,7 +44,7 @@ s = sched.scheduler(time.time, time.sleep)  # create scheduler
 def loop():
   
     readStatus();
-    s.enter(0.02, 1, loop);             #calls its self after waiting 1 seconds
+    s.enter(1, 1, loop);             #calls its self after waiting 1 seconds
 
 def main():
     ## connect to port
@@ -49,7 +52,7 @@ def main():
     time.sleep(1)
     print("Code Starting...")
     #num1 = input("Enter a number: ")
-    s.enter(0.02, 1, loop);           
+    s.enter(1, 1, loop);           
     s.run(); 
 
 main();

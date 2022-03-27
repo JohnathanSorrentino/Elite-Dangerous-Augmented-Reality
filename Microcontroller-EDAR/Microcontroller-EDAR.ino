@@ -98,27 +98,41 @@ void loop() {
   //flashRed();
   //chargingBlue();
   //randomLightUp();
+  byte serialByte;
   int adcPin = A2;
-  int potValue, brightness;
-  unsigned long int x, val;
+  int potValue, brightness, i;
+  unsigned long int pythonMsg, val;
   
   potValue = analogRead(adcPin);
   brightness = map(potValue, 0, 1023, 0, 255);
   FastLED.setBrightness(brightness);
-  
-  if (Serial.available()) {
-    x = Serial.parseInt();
-    Serial.println(x+1);
+
+
+  i = 0;
+  while (Serial.available() > 0) {
+    if (i == 0) {
+      pythonMsg = 0;
+    }
+    serialByte = Serial.read();
+    Serial.println(serialByte);
+    pythonMsg |= (long) serialByte << (i*8);
+    i++;
   }
-  switch(x)
+  
+  if ((pythonMsg & 4) == 4) {
+    setAllLeds(0xff0000);
+  } else {
+    setAllLeds(0x00ff00);
+  }
+ /* switch(x)
     {
       case 0: setAllLeds(0xff0000); break;
       case 1: flashRed(); break;
       case 2: chargingBlue(); break;
       case 3: randomLightUp(); break;
-      case 4: setAllLeds(0xffffff); break;
+      case 4: setAllLeds(0xffff00); break;
       default: rainbow(); break;//setAllLeds(0xff0089); break;
-    }
+    }*/
 }
 
 void setAllLeds(unsigned long int colour) {
