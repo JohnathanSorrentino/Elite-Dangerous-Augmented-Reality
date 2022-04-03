@@ -1,4 +1,4 @@
-# Last Updated: 2022-03-16
+# Last Updated: 2022-04-02
 # Coded by: Andersen Ball, Johnathan Sorrentino
 
 # This code retrieves status updates from Elite Dangerous and sends them to a device using a serial port.
@@ -44,7 +44,7 @@ s = sched.scheduler(time.time, time.sleep)  # create scheduler
 def loop():
   
     readStatus();
-    s.enter(1, 1, loop);             #calls its self after waiting 1 seconds
+    s.enter(0.2, 1, loop);             #calls its self after waiting 1 seconds
 
 def main():
     ## connect to port
@@ -52,7 +52,7 @@ def main():
     time.sleep(1)
     print("Code Starting...")
     #num1 = input("Enter a number: ")
-    s.enter(1, 1, loop);           
+    s.enter(0.2, 1, loop);           
     s.run(); 
 
 main();

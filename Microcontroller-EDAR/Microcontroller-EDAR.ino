@@ -91,48 +91,104 @@ void setup() {
   // put your setup code here, to run once:
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
   Serial.begin(115200);
+  Serial.setTimeout(100);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //flashRed();
-  //chargingBlue();
-  //randomLightUp();
   byte serialByte;
   int adcPin = A2;
-  int potValue, brightness, i;
-  unsigned long int pythonMsg, val;
+  int potValue, brightness, i, n;
+  unsigned long int pythonMsg;
+  unsigned long int pythonMsgTemp = 0;
+  unsigned long int val;
   
   potValue = analogRead(adcPin);
   brightness = map(potValue, 0, 1023, 0, 255);
   FastLED.setBrightness(brightness);
-
-
+  
   i = 0;
   while (Serial.available() > 0) {
-    if (i == 0) {
-      pythonMsg = 0;
-    }
     serialByte = Serial.read();
     Serial.println(serialByte);
-    pythonMsg |= (long) serialByte << (i*8);
+    pythonMsgTemp |= (long) serialByte << (i*8);
     i++;
+    if (i == 4) {
+      pythonMsg = pythonMsgTemp;
+      Serial.println(pythonMsg);
+    }
   }
   
-  if ((pythonMsg & 4) == 4) {
-    setAllLeds(0xff0000);
-  } else {
-    setAllLeds(0x00ff00);
+  // FSD Jump
+  if ((pythonMsg >> 30) & 1) {
+    randomLightUp();
   }
- /* switch(x)
-    {
-      case 0: setAllLeds(0xff0000); break;
-      case 1: flashRed(); break;
-      case 2: chargingBlue(); break;
-      case 3: randomLightUp(); break;
-      case 4: setAllLeds(0xffff00); break;
-      default: rainbow(); break;//setAllLeds(0xff0089); break;
+  // In Danger, Being Interdicted, Overheating
+  else if (((pythonMsg >> 22) & 1) | ((pythonMsg >> 23) & 1) | ((pythonMsg >> 20) & 1)) {
+    flashRed();
+  }
+  // FSD Charging
+  else if ((pythonMsg >> 17) & 1) {
+    chargingBlue();
+  } 
+  // Landing Gear Down
+  else if((pythonMsg >> 2) & 1) {
+    docked();
+  } else {
+    // Shields Up
+    if ((pythonMsg >> 3) & 1) {
+      for (n=20; n<40; n++) {
+        leds[n] = 0x0066FF;
+      }
+    } else {
+      for (n=20; n<40; n++) {
+        leds[n] = 0xff0000;
+      }
+    }
+    // HUD in Analysis Mode
+    if ((pythonMsg >> 27) & 1) {
+      for (n=8; n<20; n++) {
+        leds[n] = 0x0019FF;
+      }
+      for (n=40; n<52; n++) {
+        leds[n] = 0x0019FF;
+      }
+    } else {
+      for (n=8; n<20; n++) {
+        leds[n] = 0xff1900;
+      }
+      for (n=40; n<52; n++) {
+        leds[n] = 0xff1900;
+      }
+    }
+    // Hardpoints Deployed
+    if ((pythonMsg >> 6) & 1) {
+      for (n=0; n<8; n++) {
+        leds[n] = 0xff0000;
+      }
+    } else {
+      for (n=0; n<8; n++) {
+        leds[n] = 0x000000;
+      }
+    }
+    // Flight Assist Off
+    /*if ((pythonMsg >> 5) & 1) {
+      leds[0] = 0x00ff00;
+    } else {
+      leds[0] = 0xff0000;
     }*/
+    // Mass Locked
+    if ((pythonMsg >> 16) & 1){
+      for (n=52; n<60; n++) {
+        leds[n] = 0xff0000;
+      }
+    } else {
+      for (n=52; n<60; n++) {
+        leds[n] = 0x000000;
+      }
+    }
+    FastLED.show();
+  }
 }
 
 void setAllLeds(unsigned long int colour) {
@@ -158,7 +214,7 @@ void rainbow( void ) {
 void randomLightUp( void) {
   int n;
   unsigned long int val;
-  
+    
   for (n=0; n<20;n++) {
     val = strtoul(colourList[random(0,14)],NULL, 16);
     leds[random(1,NUM_LEDS)] = val;
@@ -168,6 +224,8 @@ void randomLightUp( void) {
 }
 void chargingBlue (void) {
   int n;
+  FastLED.clear();
+  
   for (n=0; n<NUM_LEDS/2; n++) {
     leds[NUM_LEDS/2+n] = CRGB::Blue;
     leds[NUM_LEDS/2-n-1] = CRGB::Blue;
@@ -179,30 +237,40 @@ void chargingBlue (void) {
 
 void flashRed(void) {
   int n;
-  
-  for (n=0; n<NUM_LEDS; n++) {
-    leds[n] = CRGB::Red;
-  }
-  FastLED.show();
-  delay(300);
-  for (n=0; n<NUM_LEDS; n++) {
-    leds[n] = CRGB::Black;
-  }
-  FastLED.show();
-  delay(100);
+   
+  setAllLeds(0x000000);
 
   for (int i=0; i<3; i++) {
-    for (n=0; n<NUM_LEDS; n++) {
-      leds[n] = CRGB::Red;
-    }
-    FastLED.show();
+    setAllLeds(0xff0000);
     delay(100);
-    for (n=0; n<NUM_LEDS; n++) {
-      leds[n] = CRGB::Black;
-    }
-    FastLED.show();
+    setAllLeds(0x000000);
     delay(100);
   }
+
+  setAllLeds(0xff0000);
+  delay(500);
+  setAllLeds(0x000000);
+  delay(100);
+}
+
+void docked( void ) {
+  static int ping = 0;
+  int i;
+  
+  FastLED.clear();
+  if (ping == 0) {
+    for (i=0; i<NUM_LEDS/2; i++) {
+      leds[i*2] = 0xffffff;
+    }
+    ping = 1;
+  } else {
+    for (i=0; i<NUM_LEDS/2; i++) {
+      leds[i*2+1] = 0xffffff;
+    }
+    ping = 0;
+  }
+  FastLED.show();
+  delay(1000);  
 }
 
 int StrToHex(char str[])
